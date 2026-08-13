@@ -1,7 +1,6 @@
 const state = {
   sites: [],
   health: new Map(),
-  clicks: readClicks(),
 };
 
 const elements = {
@@ -25,26 +24,6 @@ const cardThemes = [
   { color: "#785900", aura: "#ffdf9e" },
   { color: "#8c4a60", aura: "#ffd9e2" },
 ];
-
-function readClicks() {
-  try {
-    const stored = JSON.parse(localStorage.getItem("cskaoyan-site-clicks") || "{}");
-    return stored && typeof stored === "object" ? stored : {};
-  } catch {
-    return {};
-  }
-}
-
-function recordClick(site) {
-  const key = site.url;
-  state.clicks[key] = Number(state.clicks[key] || 0) + 1;
-  try {
-    localStorage.setItem("cskaoyan-site-clicks", JSON.stringify(state.clicks));
-  } catch {
-    // Private browsing may block storage; the current page still shows the incremented count.
-  }
-  return state.clicks[key];
-}
 
 function normalizeMarkdownLink(line) {
   const nestedLink = line.match(/^\[\[([^\]]+)\]\((https?:\/\/[^)]+)\)\]\((https?:\/\/[^)]+)\)\s*$/);
@@ -215,13 +194,6 @@ function renderSites() {
     const link = node.querySelector(".site-link");
     link.href = site.url;
     link.setAttribute("aria-label", `访问 ${site.name}`);
-    const clickCount = state.clicks[site.url] || 0;
-    node.querySelector(".site-clicks strong").textContent = String(clickCount);
-    link.addEventListener("click", () => {
-      const count = recordClick(site);
-      const countLabel = link.parentElement.querySelector(".site-clicks strong");
-      countLabel.textContent = String(count);
-    });
     fragment.append(node);
   });
 
