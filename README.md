@@ -2,6 +2,8 @@
 
 一个可直接部署到 GitHub Pages 的静态站点。页面会在浏览器中读取并解析 `sites.md`，无需构建步骤。
 
+欢迎通过 [GitHub 仓库](https://github.com/Wzhongkai/cskaoyan-cn) 提交 Issue 或 Pull Request，补充站点、修正介绍或改进页面。
+
 ## 维护站点目录
 
 在 `sites.md` 中按下面的格式追加内容：
