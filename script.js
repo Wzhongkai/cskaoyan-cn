@@ -102,6 +102,12 @@ function parseSites(markdown) {
       }
     }
 
+    const image = line.match(/^!\[([^\]]*)\]\((\S+)\)\s*$/);
+    if (image) {
+      current.image = image[2].trim();
+      return;
+    }
+
     current.description.push(line);
   });
 
@@ -173,6 +179,11 @@ function renderSites() {
     card.dataset.siteId = String(site.order);
     card.style.setProperty("--card-color", theme.color);
     card.style.setProperty("--card-aura", theme.aura);
+
+    if (site.image) {
+      card.classList.add("site-card--cover");
+      card.style.setProperty("--card-cover", `url("${site.image}")`);
+    }
     node.querySelector(".site-monogram").textContent = site.shortName;
     node.querySelector("h3").textContent = site.name;
 
