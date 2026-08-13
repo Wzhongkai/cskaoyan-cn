@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="计算机考研院校信息站点导航，集中浏览已收录的院校专题网站。"
+    />
+    <meta name="theme-color" content="#6750a4" />
+    <title>计算机考研 · 站点导航</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='20' fill='%236750a4'/%3E%3Ctext x='32' y='41' text-anchor='middle' font-family='Arial' font-size='25' font-weight='700' fill='white'%3ECS%3C/text%3E%3C/svg%3E"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#sites">跳到站点列表</a>
+
+    <header class="top-app-bar">
+      <a class="brand" href="#top" aria-label="返回页面顶部">
+        <span class="brand-mark" aria-hidden="true">CS</span>
+        <span class="brand-copy">
+          <strong>计算机考研</strong>
+          <span>站点导航</span>
+        </span>
+      </a>
+      <div class="header-actions">
+        <button class="contact-button" id="contact-button" type="button" data-email="cskaoyan_cn@163.com">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="3" y="5" width="18" height="14" rx="2" />
+            <path d="m4 7 8 6 8-6" />
+          </svg>
+          联系我
+        </button>
+      </div>
+    </header>
+
+    <main id="top">
+      <section class="hero shell" aria-labelledby="hero-title">
+        <div class="ambient ambient-one" aria-hidden="true"></div>
+        <div class="ambient ambient-two" aria-hidden="true"></div>
+        <div class="ambient ambient-three" aria-hidden="true"></div>
+
+        <div class="hero-copy">
+          <div class="eyebrow">
+            <span class="eyebrow-dot" aria-hidden="true"></span>
+            院校信息，一处抵达
+          </div>
+          <h1 id="hero-title">找到你的<br /><span>目标院校站</span></h1>
+          <p>
+            汇集计算机考研相关的院校专题网站。少一点寻找，多一点专注，快速抵达你真正需要的信息。
+          </p>
+          <a class="primary-button" href="#sites">
+            浏览全部站点
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14M13 6l6 6-6 6" />
+            </svg>
+          </a>
+        </div>
+
+        <div class="hero-orbit" aria-hidden="true">
+          <div class="orbit-ring orbit-ring-one"></div>
+          <div class="orbit-ring orbit-ring-two"></div>
+          <div class="orbit-core">
+            <svg viewBox="0 0 64 64">
+              <path d="M13 17.5 32 9l19 8.5L32 26l-19-8.5Z" />
+              <path d="M19 23v18c8 6 18 6 26 0V23" />
+              <path d="M51 18v17" />
+              <circle cx="51" cy="39" r="3" />
+            </svg>
+          </div>
+          <span class="orbit-chip chip-one">院校</span>
+          <span class="orbit-chip chip-two">专业</span>
+          <span class="orbit-chip chip-three">信息</span>
+        </div>
+      </section>
+
+      <section class="directory shell" id="sites" aria-labelledby="directory-title">
+        <div class="section-heading">
+          <div>
+            <span class="section-kicker">EXPLORE</span>
+            <h2 id="directory-title">院校专题站</h2>
+          </div>
+          <div class="site-count" aria-live="polite">
+            <strong id="visible-count">0</strong>
+            <span>个站点</span>
+          </div>
+        </div>
+
+        <div class="status-panel" id="status-panel" aria-live="polite">
+          <span class="loader" aria-hidden="true"></span>
+          <p>正在读取站点目录…</p>
+        </div>
+
+        <div class="site-grid" id="site-grid" hidden></div>
+
+      </section>
+
+      <section class="about shell" aria-labelledby="about-title">
+        <div class="about-symbol" aria-hidden="true">
+          <svg viewBox="0 0 64 64">
+            <path d="M13 17.5 32 9l19 8.5L32 26l-19-8.5Z" />
+            <path d="M19 23v18c8 6 18 6 26 0V23" />
+            <path d="M51 18v17" />
+            <circle cx="51" cy="39" r="3" />
+          </svg>
+        </div>
+        <div>
+          <span class="section-kicker">ABOUT</span>
+          <h2 id="about-title">把分散的信息，整理成清晰的入口</h2>
+          <p>
+            本页持续收录与维护计算机考研院校专题站。内容来自公开资料整理，仅供学习与信息检索参考。
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer shell">
+      <p>© <span id="year"></span> 计算机考研站点导航</p>
+      <a href="#top">回到顶部</a>
+    </footer>
+
+    <button class="fab" id="back-to-top" type="button" aria-label="回到顶部" title="回到顶部">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="m6 14 6-6 6 6" />
+      </svg>
+    </button>
+
+    <dialog class="contact-dialog" id="contact-dialog" aria-labelledby="contact-title">
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="关闭弹窗" title="关闭">
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M6 6l12 12M18 6 6 18" />
+        </svg>
+      </button>
+      <div class="dialog-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <rect x="3" y="5" width="18" height="14" rx="2" />
+          <path d="m4 7 8 6 8-6" />
+        </svg>
+      </div>
+      <span class="section-kicker">CONTACT</span>
+      <h2 id="contact-title">联系我</h2>
+      <p>如果你发现站点信息有误，或者希望补充新的院校专题站，可以通过邮箱联系。</p>
+      <div class="email-field">
+        <span>cskaoyan_cn@163.com</span>
+        <button class="copy-email-button" id="copy-email" type="button" data-email="cskaoyan_cn@163.com">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <rect x="8" y="8" width="11" height="11" rx="2" />
+            <path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" />
+          </svg>
+          <span>复制邮箱</span>
+        </button>
+      </div>
+    </dialog>
+
+    <template id="site-card-template">
+      <article class="site-card">
+        <div class="card-topline">
+          <div class="site-monogram" aria-hidden="true"></div>
+          <div class="site-card-meta">
+            <span class="site-clicks" aria-live="polite">访问量 <strong>0</strong></span>
+            <span class="site-health is-checking" title="正在检测网站连通性">
+              <span class="health-dot" aria-hidden="true"></span>
+              <span class="health-label">检测中</span>
+            </span>
+          </div>
+        </div>
+        <div class="site-content">
+          <h3></h3>
+          <div class="site-description"></div>
+        </div>
+        <a class="site-link" target="_blank" rel="noreferrer">
+          访问站点
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M7 17 17 7M8 7h9v9" />
+          </svg>
+        </a>
+      </article>
+    </template>
+  </body>
+</html>
