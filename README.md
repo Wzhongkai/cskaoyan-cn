@@ -7,7 +7,7 @@
 在 `sites.md` 中按下面的格式追加内容：
 
 ```md
-## **院校简称**
+## 院校简称
 
 [院校完整名称](https://example.cskaoyan.cn/)
 
