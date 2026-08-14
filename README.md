@@ -32,3 +32,13 @@ python3 -m http.server 4173
 ## GitHub Pages
 
 将这些文件提交到 GitHub 仓库，在仓库的 Pages 设置中选择从目标分支根目录部署即可。项目不需要安装依赖或运行构建命令。
+
+## 搜索引擎收录
+
+项目包含 `sitemap.xml`、`robots.txt`、canonical、Open Graph 和 Schema.org 结构化数据。院所 `ItemList` 会在浏览器读取 `sites.md` 后自动生成，无需重复维护。
+
+部署后可向 Google Search Console、Bing Webmaster Tools 和百度搜索资源平台提交：
+
+```text
+https://cskaoyan.cn/sitemap.xml
+```

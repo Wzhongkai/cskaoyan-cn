@@ -881,7 +881,7 @@ svg {
   margin-bottom: 88px;
   padding: 54px 62px;
   grid-template-columns: auto 1fr;
-  align-items: center;
+  align-items: start;
   gap: 34px;
   overflow: hidden;
   border-radius: 38px;
@@ -902,13 +902,68 @@ svg {
   box-shadow: var(--shadow-one);
 }
 
+.about-copy {
+  min-width: 0;
+}
+
 .about-symbol svg {
   width: 62px;
 }
 
 .about p {
-  max-width: 720px;
+  max-width: 880px;
   font-size: 1rem;
+}
+
+.about-points {
+  display: grid;
+  margin: 30px 0 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0;
+}
+
+.about-points > div {
+  padding: 2px 24px;
+  border-left: 1px solid rgba(103, 80, 164, 0.2);
+}
+
+.about-points > div:first-child {
+  padding-left: 0;
+  border-left: 0;
+}
+
+.about-points dt {
+  margin-bottom: 7px;
+  color: var(--md-on-surface);
+  font-weight: 700;
+}
+
+.about-points dd {
+  margin: 0;
+  color: var(--md-on-surface-variant);
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+.about-points a {
+  color: var(--md-primary);
+  font-weight: 500;
+  text-underline-offset: 3px;
+}
+
+.update-note {
+  display: flex;
+  margin-top: 26px !important;
+  align-items: center;
+  gap: 8px;
+  color: var(--md-on-surface-variant);
+  font-size: 0.78rem !important;
+}
+
+.update-note svg {
+  width: 17px;
+  height: 17px;
+  color: var(--md-primary);
 }
 
 .about p a {
@@ -1222,6 +1277,17 @@ svg {
 
   .about-symbol svg {
     width: 48px;
+  }
+
+  .about-points {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .about-points > div,
+  .about-points > div:first-child {
+    padding: 0 0 0 16px;
+    border-left: 2px solid rgba(103, 80, 164, 0.22);
   }
 
   .footer {

@@ -119,6 +119,35 @@ function getVisibleSites() {
   return [...state.sites].sort((a, b) => a.order - b.order);
 }
 
+function renderStructuredData(sites) {
+  document.querySelector("#site-list-schema")?.remove();
+
+  const schema = document.createElement("script");
+  schema.id = "site-list-schema";
+  schema.type = "application/ld+json";
+  schema.textContent = JSON.stringify({
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "@id": "https://cskaoyan.cn/#site-list",
+    name: "国科大计算机考研院所专题站",
+    description: "国科大及中国科学院相关院所的计算机考研报考信息站点列表。",
+    numberOfItems: sites.length,
+    itemListElement: sites.map((site, index) => ({
+      "@type": "ListItem",
+      position: index + 1,
+      item: {
+        "@type": "WebSite",
+        name: site.name,
+        alternateName: site.shortName,
+        url: site.url,
+        description: site.description.join(" "),
+        inLanguage: "zh-CN",
+      },
+    })),
+  });
+  document.head.append(schema);
+}
+
 function applyHealthState(siteId, status) {
   document.querySelectorAll(`[data-site-id="${siteId}"] .site-health`).forEach((badge) => {
     badge.classList.remove("is-checking", "is-online", "is-offline");
@@ -226,6 +255,7 @@ async function loadSites() {
 
     elements.status.hidden = true;
     elements.grid.hidden = false;
+    renderStructuredData(state.sites);
     renderSites();
   } catch (error) {
     elements.visibleCount.textContent = "0";
