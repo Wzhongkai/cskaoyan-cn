@@ -1,6 +1,6 @@
 ## 信工所
 
-[中科院信息工程研究所](https://iie.cskaoyan.cn/)
+[中国科学院信息工程研究所](https://iie.cskaoyan.cn/)
 
 ![封面](images/iie-cover.jpg)
 
