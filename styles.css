@@ -733,6 +733,74 @@ svg {
   box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.22);
 }
 
+/* 海报卡片：完整保留信息图，不用裁切或叠加正文干扰图片内容 */
+.site-card--poster {
+  background-color: #00172c;
+  background-image:
+    linear-gradient(to bottom, transparent 62%, rgba(0, 23, 44, 0.16) 73%, #00172c 86%),
+    var(--card-cover);
+  background-position: center, center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% auto;
+}
+
+.site-card--poster::after {
+  display: none;
+}
+
+.site-card--poster:hover {
+  background-color: #00172c;
+  background-image:
+    linear-gradient(to bottom, transparent 62%, rgba(0, 23, 44, 0.16) 73%, #00172c 86%),
+    var(--card-cover);
+  background-position: center, center top;
+  background-repeat: no-repeat;
+  background-size: 100% 100%, 100% auto;
+}
+
+.site-card--poster .card-topline {
+  justify-content: flex-end;
+}
+
+.site-card--poster .site-monogram,
+.site-card--poster .site-content {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.site-card--poster .site-health {
+  background: rgba(0, 23, 44, 0.76);
+  color: rgba(255, 244, 227, 0.92);
+  box-shadow: inset 0 0 0 1px rgba(215, 152, 64, 0.42);
+}
+
+.site-card--poster .site-health.is-online {
+  color: #b0f0b6;
+}
+
+.site-card--poster .site-health.is-offline {
+  color: #ffb4ab;
+}
+
+.site-card--poster .site-link {
+  align-self: stretch;
+  justify-content: center;
+  background: #fff4e3;
+  color: #7a3d08;
+  box-shadow: 0 7px 20px rgba(0, 0, 0, 0.24);
+}
+
+.site-card--poster .site-link:hover {
+  background: #ffe2b8;
+}
+
 .card-topline {
   position: relative;
   z-index: 1;

@@ -14,7 +14,9 @@
 
 ## 沈计所
 
-[中国科学院沈阳计算技术研究所](https://sict.cskaoyan.cn/) 
+[中国科学院沈阳计算技术研究所](https://sict.cskaoyan.cn/)
+
+![海报](images/sict-guide-cover.jpg)
 
 沈阳计算所国科大计算机考研相关信息整理，包括报考指南、历年数据、经验归档与交流信息。
 

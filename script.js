@@ -104,6 +104,7 @@ function parseSites(markdown) {
 
     const image = line.match(/^!\[([^\]]*)\]\((\S+)\)\s*$/);
     if (image) {
+      current.imageAlt = image[1].trim();
       current.image = image[2].trim();
       return;
     }
@@ -181,7 +182,8 @@ function renderSites() {
     card.style.setProperty("--card-aura", theme.aura);
 
     if (site.image) {
-      card.classList.add("site-card--cover");
+      const imageLayout = site.imageAlt === "海报" ? "poster" : "cover";
+      card.classList.add(`site-card--${imageLayout}`);
       card.style.setProperty("--card-cover", `url("${site.image}")`);
     }
     node.querySelector(".site-monogram").textContent = site.shortName;
