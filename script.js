@@ -104,6 +104,7 @@ function parseSites(markdown) {
 
     const image = line.match(/^!\[([^\]]*)\]\((\S+)\)\s*$/);
     if (image) {
+      current.imageAlt = image[1].trim();
       current.image = image[2].trim();
       return;
     }
@@ -213,8 +214,30 @@ function renderSites() {
       card.classList.add("site-card--cover");
       card.style.setProperty("--card-cover", `url("${site.image}")`);
     }
+    if (site.imageAlt === "标题封面") {
+      card.classList.add("site-card--title-only");
+    }
     node.querySelector(".site-monogram").textContent = site.shortName;
-    node.querySelector("h3").textContent = site.name;
+
+    const title = node.querySelector("h3");
+    if (site.imageAlt === "标题封面" && site.name.endsWith("报考指南")) {
+      const academy = document.createElement("span");
+      const institution = document.createElement("span");
+      const guide = document.createElement("span");
+      const institutionName = site.name.slice(0, -4);
+      const academyPrefix = "中国科学院";
+      academy.className = "title-academy";
+      institution.className = "title-institution";
+      guide.className = "title-guide";
+      academy.textContent = institutionName.startsWith(academyPrefix) ? academyPrefix : "";
+      institution.textContent = institutionName.startsWith(academyPrefix)
+        ? institutionName.slice(academyPrefix.length)
+        : institutionName;
+      guide.textContent = "报考指南";
+      title.replaceChildren(academy, institution, guide);
+    } else {
+      title.textContent = site.name;
+    }
 
     const knownHealth = state.health.get(site.order);
     if (knownHealth) {
