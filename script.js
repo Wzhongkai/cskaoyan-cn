@@ -1,3 +1,5 @@
+import { siteCardConfig } from "./site-config.js";
+
 const state = {
   sites: [],
   health: new Map(),
@@ -16,14 +18,14 @@ const elements = {
   year: document.querySelector("#year"),
 };
 
-const cardThemes = [
-  { color: "#6750a4", aura: "#eaddff" },
-  { color: "#7d5260", aura: "#ffd8e4" },
-  { color: "#386a20", aura: "#b7f397" },
-  { color: "#00639b", aura: "#cce5ff" },
-  { color: "#785900", aura: "#ffdf9e" },
-  { color: "#8c4a60", aura: "#ffd9e2" },
-];
+const configuredCards = siteCardConfig ?? {};
+const fallbackTheme = { color: "#6750a4", aura: "#eaddff" };
+const defaultCard = {
+  variant: "standard",
+  linkLabel: "访问站点",
+  ...configuredCards.defaults,
+  theme: configuredCards.defaults?.theme || fallbackTheme,
+};
 
 function normalizeMarkdownLink(line) {
   const nestedLink = line.match(/^\[\[([^\]]+)\]\((https?:\/\/[^)]+)\)\]\((https?:\/\/[^)]+)\)\s*$/);
@@ -31,7 +33,7 @@ function normalizeMarkdownLink(line) {
     return { label: nestedLink[1].trim(), url: nestedLink[3].trim() };
   }
 
-  const standardLink = line.match(/^\[([^\]]+)\]\((https?:\/\/[^)]+)\)\s*$/);
+  const standardLink = line.match(/^[[]([^\]]+)\]\((https?:\/\/[^)]+)\)\s*$/);
   if (standardLink) {
     return { label: standardLink[1].trim(), url: standardLink[2].trim() };
   }
@@ -63,14 +65,12 @@ function parseSites(markdown) {
   function commitCurrent() {
     if (!current) return;
 
-    const description = current.description
-      .map(inlineText)
-      .filter(Boolean);
-
+    const description = current.description.map(inlineText).filter(Boolean);
     if (current.url) {
       sites.push({
         ...current,
         description: description.length ? description : ["暂无介绍。"],
+        card: resolveCardConfig(current),
       });
     }
   }
@@ -102,10 +102,10 @@ function parseSites(markdown) {
       }
     }
 
+    // 保留旧格式兼容性：未来也可以直接在 Markdown 中提供一张封面图。
     const image = line.match(/^!\[([^\]]*)\]\((\S+)\)\s*$/);
     if (image) {
-      current.imageAlt = image[1].trim();
-      current.image = image[2].trim();
+      current.legacyImage = { src: image[2].trim(), alt: image[1].trim() };
       return;
     }
 
@@ -114,6 +114,90 @@ function parseSites(markdown) {
 
   commitCurrent();
   return sites;
+}
+
+function resolveCardConfig(site) {
+  const profile = configuredCards.profiles?.[site.shortName] ?? {};
+  const legacyImage = site.legacyImage;
+  const legacyCard = resolveLegacyCardConfig(site, legacyImage);
+  const legacyImageConfig = legacyImage ? {
+    src: legacyImage.src,
+    alt: legacyImage.alt,
+    position: legacyImagePosition(legacyImage.alt),
+  } : null;
+  const image = Object.prototype.hasOwnProperty.call(profile, "image")
+    ? profile.image
+    : legacyImageConfig ?? defaultCard.image ?? null;
+
+  return {
+    ...defaultCard,
+    ...legacyCard,
+    ...profile,
+    theme: profile.theme ?? defaultCard.theme,
+    image,
+  };
+}
+
+function legacyImagePosition(alt) {
+  if (alt === "院所封面") return "center 12%";
+  if (alt === "封面") return "center 10%";
+  return "center";
+}
+
+function resolveLegacyCardConfig(site, image) {
+  if (!image) return {};
+
+  if (image.alt === "院所封面") {
+    return {
+      variant: "institute-featured",
+      identity: {
+        code: "CAS · IIE",
+        subtitle: "院所专题 / 2026",
+      },
+      titleParts: buildLegacyInstituteTitle(site.name),
+    };
+  }
+
+  if (image.alt === "标题封面") {
+    return {
+      variant: "title-only",
+      titleParts: buildLegacyGuideTitle(site.name),
+    };
+  }
+
+  return { variant: "cover" };
+}
+
+// 仅用于兼容旧版 sites.md；新卡片请直接在 site-config.js 中填写 titleParts。
+function buildLegacyInstituteTitle(name) {
+  const academyPrefix = "中国科学院";
+  if (!name.startsWith(academyPrefix)) return undefined;
+
+  return [
+    { className: "institute-title-academy", text: academyPrefix },
+    { className: "institute-title-name", text: name.slice(academyPrefix.length) },
+    {
+      className: "institute-title-english",
+      text: "INSTITUTE OF INFORMATION ENGINEERING",
+    },
+  ];
+}
+
+function buildLegacyGuideTitle(name) {
+  if (!name.endsWith("报考指南")) return undefined;
+
+  const institutionName = name.slice(0, -4);
+  const academyPrefix = "中国科学院";
+  const hasAcademyPrefix = institutionName.startsWith(academyPrefix);
+
+  return [
+    { className: "title-academy", text: hasAcademyPrefix ? academyPrefix : "" },
+    {
+      className: "title-institution",
+      text: hasAcademyPrefix ? institutionName.slice(academyPrefix.length) : institutionName,
+    },
+    { className: "title-guide", text: "报考指南" },
+  ];
 }
 
 function getVisibleSites() {
@@ -151,21 +235,25 @@ function renderStructuredData(sites) {
 
 function applyHealthState(siteId, status) {
   document.querySelectorAll(`[data-site-id="${siteId}"] .site-health`).forEach((badge) => {
-    badge.classList.remove("is-checking", "is-online", "is-offline");
-    badge.classList.add(`is-${status}`);
-
-    const label = badge.querySelector(".health-label");
-    if (status === "online") {
-      label.textContent = "可访问";
-      badge.title = "网站连接正常";
-    } else if (status === "offline") {
-      label.textContent = "检测异常";
-      badge.title = "暂时无法建立连接，目标网站仍可能正常运行";
-    } else {
-      label.textContent = "检测中";
-      badge.title = "正在检测网站连通性";
-    }
+    updateHealthBadge(badge, status);
   });
+}
+
+function updateHealthBadge(badge, status) {
+  badge.classList.remove("is-checking", "is-online", "is-offline");
+  badge.classList.add(`is-${status}`);
+
+  const label = badge.querySelector(".health-label");
+  if (status === "online") {
+    label.textContent = "可访问";
+    badge.title = "网站连接正常";
+  } else if (status === "offline") {
+    label.textContent = "检测异常";
+    badge.title = "暂时无法建立连接，目标网站仍可能正常运行";
+  } else {
+    label.textContent = "检测中";
+    badge.title = "正在检测网站连通性";
+  }
 }
 
 async function checkSiteHealth(site) {
@@ -194,75 +282,99 @@ async function checkSiteHealth(site) {
   }
 }
 
+function appendTitleParts(title, parts) {
+  if (!Array.isArray(parts) || !parts.length) {
+    title.textContent = title.dataset.siteName ?? "";
+    return;
+  }
+
+  title.replaceChildren(
+    ...parts.map(({ className, text }) => {
+      const part = document.createElement("span");
+      part.className = className;
+      part.textContent = text;
+      return part;
+    }),
+  );
+}
+
+function appendIdentity(card, identity) {
+  if (!identity) return;
+
+  const identityNode = document.createElement("div");
+  const rule = document.createElement("span");
+  const copy = document.createElement("span");
+  const code = document.createElement("strong");
+  const subtitle = document.createElement("small");
+
+  identityNode.className = "institute-identity";
+  identityNode.setAttribute("aria-hidden", "true");
+  rule.className = "institute-identity-rule";
+  copy.className = "institute-identity-copy";
+  code.textContent = identity.code ?? "";
+  subtitle.textContent = identity.subtitle ?? "";
+  copy.append(code, subtitle);
+  identityNode.append(rule, copy);
+  card.querySelector(".card-topline").after(identityNode);
+}
+
+function configureCard(card, site) {
+  const config = site.card;
+  const variant = config.variant || "standard";
+  const theme = config.theme || defaultCard.theme;
+
+  card.dataset.siteId = String(site.order);
+  card.dataset.cardVariant = variant;
+  card.classList.add(`site-card--${variant}`);
+  card.style.setProperty("--card-color", theme.color);
+  card.style.setProperty("--card-aura", theme.aura);
+
+  if (config.image?.src) {
+    card.classList.add("site-card--cover");
+    card.style.setProperty("--card-cover", `url("${config.image.src}")`);
+    card.style.setProperty("--card-cover-position", config.image.position || "center");
+  }
+
+  card.querySelector(".site-monogram").textContent = config.monogram ?? site.shortName;
+  appendIdentity(card, config.identity);
+}
+
+function renderSiteCard(site) {
+  const node = elements.template.content.cloneNode(true);
+  const card = node.querySelector(".site-card");
+  const title = node.querySelector("h3");
+  const config = site.card;
+
+  configureCard(card, site);
+  title.dataset.siteName = site.name;
+  appendTitleParts(title, config.titleParts);
+
+  const knownHealth = state.health.get(site.order);
+  if (knownHealth) updateHealthBadge(node.querySelector(".site-health"), knownHealth);
+
+  const description = node.querySelector(".site-description");
+  site.description.forEach((paragraph) => {
+    const p = document.createElement("p");
+    p.textContent = paragraph;
+    description.append(p);
+  });
+
+  const link = node.querySelector(".site-link");
+  link.href = site.url;
+  link.setAttribute("aria-label", `访问 ${site.name}`);
+  link.firstChild.textContent = `${config.linkLabel || "访问站点"} `;
+  return node;
+}
+
 function renderSites() {
   const sites = getVisibleSites();
   const fragment = document.createDocumentFragment();
 
   elements.grid.replaceChildren();
   elements.visibleCount.textContent = String(sites.length);
-
-  sites.forEach((site, index) => {
-    const node = elements.template.content.cloneNode(true);
-    const card = node.querySelector(".site-card");
-    const theme = cardThemes[(site.order + index) % cardThemes.length];
-
-    card.dataset.siteId = String(site.order);
-    card.style.setProperty("--card-color", theme.color);
-    card.style.setProperty("--card-aura", theme.aura);
-
-    if (site.image) {
-      card.classList.add("site-card--cover");
-      card.style.setProperty("--card-cover", `url("${site.image}")`);
-    }
-    if (site.imageAlt === "标题封面") {
-      card.classList.add("site-card--title-only");
-    }
-    node.querySelector(".site-monogram").textContent = site.shortName;
-
-    const title = node.querySelector("h3");
-    if (site.imageAlt === "标题封面" && site.name.endsWith("报考指南")) {
-      const academy = document.createElement("span");
-      const institution = document.createElement("span");
-      const guide = document.createElement("span");
-      const institutionName = site.name.slice(0, -4);
-      const academyPrefix = "中国科学院";
-      academy.className = "title-academy";
-      institution.className = "title-institution";
-      guide.className = "title-guide";
-      academy.textContent = institutionName.startsWith(academyPrefix) ? academyPrefix : "";
-      institution.textContent = institutionName.startsWith(academyPrefix)
-        ? institutionName.slice(academyPrefix.length)
-        : institutionName;
-      guide.textContent = "报考指南";
-      title.replaceChildren(academy, institution, guide);
-    } else {
-      title.textContent = site.name;
-    }
-
-    const knownHealth = state.health.get(site.order);
-    if (knownHealth) {
-      const badge = node.querySelector(".site-health");
-      badge.classList.remove("is-checking");
-      badge.classList.add(`is-${knownHealth}`);
-      badge.querySelector(".health-label").textContent = knownHealth === "online" ? "可访问" : "检测异常";
-    }
-
-    const description = node.querySelector(".site-description");
-    site.description.forEach((paragraph) => {
-      const p = document.createElement("p");
-      p.textContent = paragraph;
-      description.append(p);
-    });
-
-    const link = node.querySelector(".site-link");
-    link.href = site.url;
-    link.setAttribute("aria-label", `访问 ${site.name}`);
-    fragment.append(node);
-  });
-
+  sites.forEach((site) => fragment.append(renderSiteCard(site)));
   elements.grid.append(fragment);
   elements.grid.hidden = sites.length === 0;
-
   sites.forEach(checkSiteHealth);
 }
 
@@ -272,9 +384,7 @@ async function loadSites() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     state.sites = parseSites(await response.text());
-    if (!state.sites.length) {
-      throw new Error("sites.md 中没有可显示的有效站点");
-    }
+    if (!state.sites.length) throw new Error("sites.md 中没有可显示的有效站点");
 
     elements.status.hidden = true;
     elements.grid.hidden = false;
@@ -282,6 +392,9 @@ async function loadSites() {
     renderSites();
   } catch (error) {
     elements.visibleCount.textContent = "0";
+    elements.grid.replaceChildren();
+    elements.grid.hidden = true;
+    elements.status.hidden = false;
     elements.status.innerHTML = `
       <div class="empty-icon" aria-hidden="true">
         <svg viewBox="0 0 24 24"><path d="M12 8v5M12 17h.01"/><path d="M10.3 4.7 2.9 17.5A2 2 0 0 0 4.6 20h14.8a2 2 0 0 0 1.7-2.5L13.7 4.7a2 2 0 0 0-3.4 0Z"/></svg>
