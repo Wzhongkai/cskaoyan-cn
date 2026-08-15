@@ -78,6 +78,9 @@ export const siteCardConfig = {
     },
 
     杭高院: {
+      image: {
+        src: "images/hias-cover.png",
+      },
       theme: {
         color: "#386a20",
         aura: "#b7f397",
