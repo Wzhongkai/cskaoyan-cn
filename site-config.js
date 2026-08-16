@@ -19,7 +19,7 @@ export const siteCardConfig = {
     信工所: {
       variant: "institute-featured",
       image: {
-        src: "images/iie-cover-v2.jpg",
+        src: "images/iie-cover.jpg",
         position: "center 12%",
       },
       theme: {
@@ -71,6 +71,10 @@ export const siteCardConfig = {
     },
 
     华大: {
+      image: {
+        src: "images/bgi-cover.jpg",
+        position: "center",
+      },
       theme: {
         color: "#6750a4",
         aura: "#eaddff",
