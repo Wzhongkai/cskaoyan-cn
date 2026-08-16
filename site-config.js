@@ -86,5 +86,17 @@ export const siteCardConfig = {
         aura: "#b7f397",
       },
     },
+
+        网信中心: {
+      variant: "cover",
+      image: {
+        src: "images/cnic-cover.jpg",
+        position: "center",
+      },
+      theme: {
+        color: "#CC0028",
+        aura: "#f6c9d2",
+      },
+    },
   },
 };
