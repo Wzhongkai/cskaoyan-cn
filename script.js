@@ -3,11 +3,21 @@ import { siteCardConfig } from "./site-config.js";
 const state = {
   sites: [],
   health: new Map(),
+  scoreRows: [],
 };
 
 const elements = {
   grid: document.querySelector("#site-grid"),
   template: document.querySelector("#site-card-template"),
+  scoreSection: document.querySelector("#score-overview"),
+  scoreStatus: document.querySelector("#score-status"),
+  scoreTable: document.querySelector("#score-table"),
+  scoreTableBody: document.querySelector("#score-table-body"),
+  scoreInstitutionFilter: document.querySelector("#score-institution-filter"),
+  scoreYearFilter: document.querySelector("#score-year-filter"),
+  scoreCourseFilter: document.querySelector("#score-course-filter"),
+  scoreDegreeFilter: document.querySelector("#score-degree-filter"),
+  scoreYearRange: document.querySelector("#score-year-range"),
   status: document.querySelector("#status-panel"),
   visibleCount: document.querySelector("#visible-count"),
   contact: document.querySelector("#contact-button"),
@@ -136,6 +146,185 @@ function resolveCardConfig(site) {
     theme: profile.theme ?? defaultCard.theme,
     image,
   };
+}
+
+function resolveScoreFile(site) {
+  const configuredFile = site.card?.scoreFile;
+  if (configuredFile) return configuredFile;
+  return `scores/${encodeURIComponent(site.shortName)}.md`;
+}
+
+function normalizeScoreHeader(value) {
+  return value.replace(/\s+/g, "").replace(/[（(].*?[）)]/g, "").trim();
+}
+
+function parseScoreCell(value) {
+  const link = value.match(/\[([^\]]+)\]\(([^)]+)\)/);
+  return {
+    text: inlineText(value),
+    url: link?.[2]?.trim() || "",
+  };
+}
+
+function parseScoreMarkdown(markdown, site) {
+  const lines = markdown.replace(/\r\n?/g, "\n").split("\n");
+  const rows = [];
+
+  for (let index = 0; index < lines.length - 1; index += 1) {
+    const headerLine = lines[index].trim();
+    const separatorLine = lines[index + 1].trim();
+    if (!headerLine.includes("|") || !/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(separatorLine)) {
+      continue;
+    }
+
+    const headers = splitMarkdownTableRow(headerLine).map(normalizeScoreHeader);
+    const headerMap = new Map(headers.map((header, headerIndex) => [header, headerIndex]));
+    const findColumn = (...names) => names.map(normalizeScoreHeader).find((name) => headerMap.has(name));
+    const columns = {
+      year: findColumn("年份", "年"),
+      degreeType: findColumn("类型", "学硕/专硕", "学硕OR专硕"),
+      majorName: findColumn("专业", "专业名称", "方向"),
+      professionalCourseCode: findColumn("专业课代码", "科目代码"),
+      politics: findColumn("政治"),
+      english: findColumn("英语"),
+      math: findColumn("数学"),
+      professionalCourseScore: findColumn("专业课", "专业课分数", "业务课"),
+      totalLine: findColumn("分数线", "总分线", "总分"),
+      source: findColumn("来源"),
+      note: findColumn("备注"),
+    };
+
+    for (let rowIndex = index + 2; rowIndex < lines.length; rowIndex += 1) {
+      const rowLine = lines[rowIndex].trim();
+      if (!rowLine.startsWith("|")) break;
+
+      const cells = splitMarkdownTableRow(rowLine);
+      const cellAt = (column) => (column ? parseScoreCell(cells[headerMap.get(column)] ?? "") : { text: "", url: "" });
+      const year = Number.parseInt(cellAt(columns.year).text, 10);
+      const totalLine = cellAt(columns.totalLine).text;
+      if (!Number.isFinite(year) || !totalLine) continue;
+
+      const source = cellAt(columns.source);
+      rows.push({
+        institutionId: site.shortName,
+        institutionName: site.shortName,
+        year,
+        degreeType: cellAt(columns.degreeType).text || "未注明",
+        majorName: cellAt(columns.majorName).text || "未注明专业",
+        professionalCourseCode: cellAt(columns.professionalCourseCode).text || "未注明",
+        politics: cellAt(columns.politics).text,
+        english: cellAt(columns.english).text,
+        math: cellAt(columns.math).text,
+        professionalCourseScore: cellAt(columns.professionalCourseScore).text,
+        totalLine,
+        source: source.text,
+        sourceUrl: source.url,
+        note: cellAt(columns.note).text,
+      });
+    }
+    break;
+  }
+
+  return rows;
+}
+
+function splitMarkdownTableRow(line) {
+  return line.trim().replace(/^\|/, "").replace(/\|$/, "").split("|").map((cell) => cell.trim());
+}
+
+function getRecentScoreRows(rows) {
+  const currentYear = new Date().getFullYear();
+  return rows
+    .filter((row) => row.year >= currentYear - 2 && row.year <= currentYear)
+    .sort((a, b) => b.year - a.year || a.institutionName.localeCompare(b.institutionName, "zh-CN"));
+}
+
+function updateScoreFilters(rows) {
+  const institutions = [...new Set(rows.map((row) => row.institutionName))];
+  const years = [...new Set(rows.map((row) => row.year))].sort((a, b) => b - a);
+  const courseCodes = [...new Set(rows.map((row) => row.professionalCourseCode))]
+    .sort((a, b) => a.localeCompare(b, "zh-CN", { numeric: true }));
+  const degrees = [...new Set(rows.map((row) => row.degreeType))];
+  const updateSelect = (select, values, allLabel) => {
+    const previous = select.value;
+    const normalizedValues = values.map(String);
+    select.replaceChildren(new Option(allLabel, ""), ...normalizedValues.map((value) => new Option(value, value)));
+    if (normalizedValues.includes(previous)) select.value = previous;
+  };
+
+  updateSelect(elements.scoreInstitutionFilter, institutions, "全部院所");
+  updateSelect(elements.scoreYearFilter, years, "全部年份");
+  updateSelect(elements.scoreCourseFilter, courseCodes, "全部代码");
+  updateSelect(elements.scoreDegreeFilter, degrees, "全部类型");
+}
+
+function renderScoreRows() {
+  const institution = elements.scoreInstitutionFilter.value;
+  const year = elements.scoreYearFilter.value;
+  const courseCode = elements.scoreCourseFilter.value;
+  const degree = elements.scoreDegreeFilter.value;
+  const rows = state.scoreRows.filter((row) => {
+    return (!institution || row.institutionName === institution)
+      && (!year || String(row.year) === year)
+      && (!courseCode || row.professionalCourseCode === courseCode)
+      && (!degree || row.degreeType === degree);
+  });
+
+  elements.scoreTableBody.replaceChildren();
+  rows.forEach((row) => {
+    const tr = document.createElement("tr");
+    const values = [
+      row.institutionName,
+      row.year,
+      row.degreeType,
+      row.majorName,
+      row.professionalCourseCode,
+      row.politics,
+      row.english,
+      row.math,
+      row.professionalCourseScore,
+      row.totalLine,
+    ];
+    values.forEach((value, index) => {
+      const td = document.createElement("td");
+      td.dataset.label = ["研究所", "年份", "类型", "专业", "专业课代码", "政治", "英语", "数学", "专业课", "总分线"][index];
+      td.textContent = value;
+      tr.append(td);
+    });
+    if (row.sourceUrl) {
+      const source = document.createElement("a");
+      source.href = row.sourceUrl;
+      source.target = "_blank";
+      source.rel = "noreferrer";
+      source.textContent = row.source || "来源";
+      source.className = "score-source";
+      tr.lastElementChild.append(document.createTextNode(" "), source);
+    }
+    elements.scoreTableBody.append(tr);
+  });
+
+  elements.scoreTable.hidden = rows.length === 0;
+  elements.scoreStatus.hidden = rows.length > 0;
+  if (!rows.length) elements.scoreStatus.textContent = "近三年暂无已录入的分数线数据";
+}
+
+async function loadScoreOverview(sites) {
+  const currentYear = new Date().getFullYear();
+  elements.scoreYearRange.textContent = `${currentYear - 2}–${currentYear} 年`;
+
+  const scoreSets = await Promise.all(sites.map(async (site) => {
+    try {
+      const response = await fetch(resolveScoreFile(site), { cache: "no-cache" });
+      if (!response.ok) return [];
+      return parseScoreMarkdown(await response.text(), site);
+    } catch {
+      return [];
+    }
+  }));
+
+  state.scoreRows = getRecentScoreRows(scoreSets.flat());
+  updateScoreFilters(state.scoreRows);
+  renderScoreRows();
 }
 
 function legacyImagePosition(alt) {
@@ -390,6 +579,7 @@ async function loadSites() {
     elements.grid.hidden = false;
     renderStructuredData(state.sites);
     renderSites();
+    loadScoreOverview(state.sites);
   } catch (error) {
     elements.visibleCount.textContent = "0";
     elements.grid.replaceChildren();
@@ -419,6 +609,11 @@ elements.dialogClose.addEventListener("click", () => {
 elements.contactDialog.addEventListener("click", (event) => {
   if (event.target === elements.contactDialog) elements.contactDialog.close();
 });
+
+elements.scoreInstitutionFilter.addEventListener("change", renderScoreRows);
+elements.scoreYearFilter.addEventListener("change", renderScoreRows);
+elements.scoreCourseFilter.addEventListener("change", renderScoreRows);
+elements.scoreDegreeFilter.addEventListener("change", renderScoreRows);
 
 elements.copyEmail.addEventListener("click", async () => {
   const email = elements.copyEmail.dataset.email;

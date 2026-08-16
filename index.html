@@ -169,6 +169,64 @@
 
         <div class="site-grid" id="site-grid" hidden></div>
 
+        <section class="score-overview" id="score-overview" aria-labelledby="score-overview-title">
+          <div class="score-heading">
+            <div>
+              <span class="section-kicker">SCORE SNAPSHOT</span>
+              <h2 id="score-overview-title">历年分数线速览</h2>
+            </div>
+            <span class="score-year-range" id="score-year-range">近三年</span>
+          </div>
+
+          <div class="score-toolbar" aria-label="分数线筛选">
+            <label>
+              <span>研究所</span>
+              <select id="score-institution-filter">
+                <option value="">全部院所</option>
+              </select>
+            </label>
+            <label>
+              <span>年份</span>
+              <select id="score-year-filter">
+                <option value="">全部年份</option>
+              </select>
+            </label>
+            <label>
+              <span>专业课代码</span>
+              <select id="score-course-filter">
+                <option value="">全部代码</option>
+              </select>
+            </label>
+            <label>
+              <span>类型</span>
+              <select id="score-degree-filter">
+                <option value="">全部类型</option>
+              </select>
+            </label>
+          </div>
+
+          <p class="score-status" id="score-status">正在读取分数线数据…</p>
+          <div class="score-table-wrap">
+            <table class="score-table" id="score-table" hidden>
+              <thead>
+                <tr>
+                  <th scope="col">研究所</th>
+                  <th scope="col">年份</th>
+                  <th scope="col">类型</th>
+                  <th scope="col">专业</th>
+                  <th scope="col">专业课代码</th>
+                  <th scope="col">政治</th>
+                  <th scope="col">英语</th>
+                  <th scope="col">数学</th>
+                  <th scope="col">专业课</th>
+                  <th scope="col">总分线</th>
+                </tr>
+              </thead>
+              <tbody id="score-table-body"></tbody>
+            </table>
+          </div>
+        </section>
+
       </section>
 
       <section class="about shell" aria-labelledby="about-title">

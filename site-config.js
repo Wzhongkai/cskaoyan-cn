@@ -17,6 +17,7 @@ export const siteCardConfig = {
 
   profiles: {
     信工所: {
+      scoreFile: "scores/iie.md",
       variant: "institute-featured",
       image: {
         src: "images/iie-cover.jpg",
@@ -42,6 +43,7 @@ export const siteCardConfig = {
     },
 
     软件所: {
+      scoreFile: "scores/iscas.md",
       variant: "cover",
       image: {
         src: "images/iscas-cover.jpg",
@@ -54,6 +56,7 @@ export const siteCardConfig = {
     },
 
     沈计所: {
+      scoreFile: "scores/sict.md",
       variant: "title-only",
       image: {
         src: "images/sict-campus-cover-v5.jpg",
@@ -71,6 +74,7 @@ export const siteCardConfig = {
     },
 
     华大: {
+      scoreFile: "scores/bgi.md",
       image: {
         src: "images/bgi-cover.jpg",
         position: "center",
@@ -82,6 +86,7 @@ export const siteCardConfig = {
     },
 
     杭高院: {
+      scoreFile: "scores/hias.md",
       image: {
         src: "images/hias-cover.png",
       },
@@ -91,7 +96,8 @@ export const siteCardConfig = {
       },
     },
 
-        网信中心: {
+    网信中心: {
+      scoreFile: "scores/cnic.md",
       variant: "cover",
       image: {
         src: "images/cnic-cover.jpg",
